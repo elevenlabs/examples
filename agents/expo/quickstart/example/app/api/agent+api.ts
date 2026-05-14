@@ -34,11 +34,14 @@ function voiceFirstConversationConfig(): ConversationalConfig {
     conversation: {
       textOnly: false,
       clientEvents: [
+        ClientEvent.Audio,
+        ClientEvent.Interruption,
         ClientEvent.UserTranscript,
         ClientEvent.TentativeUserTranscript,
         ClientEvent.AgentResponse,
+        ClientEvent.InternalTentativeAgentResponse,
         ClientEvent.AgentChatResponsePart,
-        ClientEvent.Audio,
+        ClientEvent.AgentResponseComplete,
       ],
     },
   };

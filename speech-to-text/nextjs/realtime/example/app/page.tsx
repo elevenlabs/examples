@@ -152,7 +152,7 @@ export default function Home() {
           {/* Live waveform */}
           <div className="h-16">
             <LiveWaveform
-              active={false}
+              active={isActive}
               processing={isActive}
               barColor="rgb(115 115 115)"
               fadeEdges={true}

@@ -47,6 +47,12 @@ function VoiceAgentPanel({
         },
       ]);
     },
+    onConnect: () => {
+      setBusy(current => (current === "token" ? "idle" : current));
+    },
+    onError: () => {
+      setBusy("idle");
+    },
   });
 
   const clearConversationError = useCallback(() => {
@@ -134,13 +140,12 @@ function VoiceAgentPanel({
       if (!data.token) {
         throw new Error("Missing token in response");
       }
-      await startSession({
+      startSession({
         conversationToken: data.token,
         connectionType: "webrtc",
       });
     } catch (e) {
       setApiError(e instanceof Error ? e.message : "Failed to start session");
-    } finally {
       setBusy("idle");
     }
   }, [agentId, onClearProviderError, startSession]);
@@ -308,7 +313,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: "100%",
-    maxWidth: 480,
+    maxWidth: 672,
     alignSelf: "center",
     paddingHorizontal: 24,
     paddingVertical: 48,
@@ -420,10 +425,7 @@ const styles = StyleSheet.create({
   transcriptBox: {
     marginTop: 8,
     maxHeight: 320,
-    borderWidth: 1,
-    borderColor: "#e5e5e5",
-    borderRadius: 6,
-    padding: 12,
+    paddingVertical: 4,
   },
   transcriptEmpty: {
     fontSize: 14,

@@ -125,13 +125,17 @@ export default function Home() {
               )}
             </div>
             <div className="text-xs text-neutral-400">
-              {isActive ? (
+              {isConnecting ? (
+                <span>Connecting</span>
+              ) : isActive ? (
                 <span className="flex items-center">
                   <span className="mr-1.5 h-2 w-2 rounded-full bg-green-500"></span>
                   {scribe.status === "transcribing"
                     ? "Transcribing"
                     : "Connected"}
                 </span>
+              ) : scribe.status === "error" ? (
+                <span className="text-red-600">Error</span>
               ) : (
                 <span>Disconnected</span>
               )}
@@ -148,7 +152,7 @@ export default function Home() {
           {/* Live waveform */}
           <div className="h-16">
             <LiveWaveform
-              active={isActive}
+              active={false}
               processing={isActive}
               barColor="rgb(115 115 115)"
               fadeEdges={true}

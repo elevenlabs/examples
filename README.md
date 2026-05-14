@@ -56,6 +56,14 @@ Run all example prompts:
 pnpm run generate
 ```
 
+Check whether a regeneration produced changes worth opening a PR for:
+
+```bash
+pnpm run changes:meaningful
+```
+
+Automation should only create a PR when this command exits successfully. It ignores known runtime artifacts such as generated audio outputs.
+
 Run only one example:
 
 ```bash

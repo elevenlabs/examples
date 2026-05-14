@@ -407,9 +407,9 @@ for prompt_file in "${PROMPT_FILES[@]}"; do
         fi
         preamble+="${setup_detail}."$'\n\n'
       fi
-      preamble+="Implement in \`example/\` only."
+      preamble+="Implement in \`example/\` only. Avoid cosmetic-only edits, generated runtime artifacts, and unrelated formatting changes."
       if [[ -f "${REPO_ROOT}/DESIGN.md" ]]; then
-        preamble+=$'\n\n'"Read \`DESIGN.md\` at the repo root for styling rules. Preserve any existing template header and layout container."
+        preamble+=$'\n\n'"Read \`DESIGN.md\` at the repo root for styling rules. Preserve any existing template header, layout container, and visual styling unless the prompt explicitly requires a UI change."
       fi
 
       # Auto-load skills referenced in the prompt (skills cannot be invoked in pipe mode)

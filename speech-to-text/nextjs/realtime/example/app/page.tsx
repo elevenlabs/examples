@@ -39,6 +39,15 @@ export default function Home() {
   const isActive =
     scribe.status === "connected" || scribe.status === "transcribing";
   const isConnecting = scribe.status === "connecting";
+  const statusLabel = isConnecting
+    ? "Connecting…"
+    : scribe.status === "error"
+      ? "Error"
+      : isActive
+        ? scribe.status === "transcribing"
+          ? "Transcribing"
+          : "Connected"
+        : "Disconnected";
 
   const handleStart = useCallback(async () => {
     try {
@@ -125,16 +134,20 @@ export default function Home() {
               )}
             </div>
             <div className="text-xs text-neutral-400">
-              {isActive ? (
-                <span className="flex items-center">
-                  <span className="mr-1.5 h-2 w-2 rounded-full bg-green-500"></span>
-                  {scribe.status === "transcribing"
-                    ? "Transcribing"
-                    : "Connected"}
-                </span>
-              ) : (
-                <span>Disconnected</span>
-              )}
+              <span className="flex items-center">
+                <span
+                  className={`mr-1.5 h-2 w-2 rounded-full ${
+                    isActive
+                      ? "bg-green-500"
+                      : isConnecting
+                        ? "bg-neutral-300"
+                        : scribe.status === "error"
+                          ? "bg-red-500"
+                          : "bg-neutral-300"
+                  }`}
+                />
+                {statusLabel}
+              </span>
             </div>
           </div>
 

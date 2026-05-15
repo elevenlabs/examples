@@ -361,7 +361,7 @@ export default function Home() {
 
                 {convertedUrl && !isConverting && (
                   <div className="space-y-2">
-                    <p className="text-xs text-neutral-400">Converted audio</p>
+                    <p className="text-xs text-neutral-400">Converted Audio</p>
                     <audio className="w-full" controls src={convertedUrl} />
                     <a
                       href={convertedUrl}

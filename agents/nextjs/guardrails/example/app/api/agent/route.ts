@@ -1,6 +1,8 @@
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
-import type { ConversationConfig } from "@elevenlabs/elevenlabs-js/api/types/ConversationConfig";
-import { ClientEvent } from "@elevenlabs/elevenlabs-js/api/types/ClientEvent";
+import {
+  ClientEvent,
+  type ConversationConfigInput,
+} from "@elevenlabs/elevenlabs-js/api/types";
 import { NextResponse } from "next/server";
 
 const DEMO_AGENT_NAME = "Guardrails Demo Voice";
@@ -57,7 +59,7 @@ export async function POST() {
   const { client, error } = getClient();
   if (error) return error;
 
-  const clientEvents: NonNullable<ConversationConfig["clientEvents"]> = [
+  const clientEvents: NonNullable<ConversationConfigInput["clientEvents"]> = [
     ClientEvent.Audio,
     ClientEvent.Interruption,
     ClientEvent.UserTranscript,

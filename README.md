@@ -24,6 +24,7 @@ Shared base templates live in `templates/` (Expo, Next.js, Python, TypeScript). 
 - [Sound Effects Quickstart (Python)](sound-effects/python/quickstart/example/README.md) — Generate a sound effect MP3 from a text prompt with the ElevenLabs Python SDK.
 - [Sound Effects Playground (Next.js)](sound-effects/nextjs/quickstart/example/README.md) — Enter a prompt, generate a sound effect, and play it back in the browser.
 - [Real-Time Speech-to-Text (Next.js)](speech-to-text/nextjs/realtime/example/README.md) — Live microphone transcription with VAD in a Next.js app.
+- [Speech Engine Quickstart (Next.js)](speech-engine/nextjs/quickstart/example/README.md) — Add voice to your own LLM-backed chat agent with a Speech Engine WebSocket server and Next.js client.
 - [Real-Time Voice Agent (Next.js)](agents/nextjs/quickstart/example/README.md) — Live voice conversations with the ElevenLabs Agents Platform using the React Agents SDK.
 - [Voice Agent Guardrails Demo (Next.js)](agents/nextjs/guardrails/example/README.md) — Demonstrate custom guardrails and the `guardrail_triggered` client event in a live voice agent.
 - [Voice Isolator (Next.js)](voice-isolator/nextjs/quickstart/example/README.md) — Record your voice in the browser and remove background noise with the Voice Isolator API.

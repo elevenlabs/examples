@@ -1,5 +1,4 @@
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
-import type { ConversationConfig } from "@elevenlabs/elevenlabs-js/api/types/ConversationConfig";
 import { ClientEvent } from "@elevenlabs/elevenlabs-js/api/types/ClientEvent";
 import { NextResponse } from "next/server";
 
@@ -57,7 +56,7 @@ export async function POST() {
   const { client, error } = getClient();
   if (error) return error;
 
-  const clientEvents: NonNullable<ConversationConfig["clientEvents"]> = [
+  const clientEvents = [
     ClientEvent.Audio,
     ClientEvent.Interruption,
     ClientEvent.UserTranscript,

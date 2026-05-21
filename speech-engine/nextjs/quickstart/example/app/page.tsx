@@ -11,7 +11,7 @@ import {
   type KeyboardEvent,
 } from "react";
 
-import { VOICE_FIRST_MESSAGE } from "@/lib/assistant";
+import { VOICE_FIRST_MESSAGE } from "@/lib/assistant-constants";
 
 type DemoRole = "user" | "assistant";
 type DemoChannel = "chat" | "voice";

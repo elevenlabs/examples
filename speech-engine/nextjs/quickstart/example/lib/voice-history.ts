@@ -45,7 +45,7 @@ export async function createVoiceHistory(messages: ChatMessage[]) {
 
 export async function linkVoiceHistory(
   conversationId: string,
-  historyId: string,
+  historyId: string
 ) {
   const store = await readStore();
 

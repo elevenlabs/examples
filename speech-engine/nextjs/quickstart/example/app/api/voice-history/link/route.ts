@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   ) {
     return NextResponse.json(
       { error: "Provide a conversationId and historyId." },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   if (!linked) {
     return NextResponse.json(
       { error: "The voice history could not be found." },
-      { status: 404 },
+      { status: 404 }
     );
   }
 

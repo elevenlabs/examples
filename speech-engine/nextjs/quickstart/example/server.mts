@@ -40,7 +40,7 @@ async function loadInitialHistory(conversationId: string) {
       return history;
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    await new Promise(resolve => setTimeout(resolve, 80));
   }
 
   return [];
@@ -66,7 +66,7 @@ elevenlabs.speechEngine.attach(SPEECH_ENGINE_ID, httpServer, "/ws", {
 
     const responseStream = await createAssistantStream(
       [...initialHistory, ...transcriptToChatMessages(transcript)],
-      signal,
+      signal
     );
 
     session.sendResponse(responseStream);

@@ -19,11 +19,11 @@ function parseMessages(input: unknown): ChatMessage[] | null {
       const { role, content } = message as Partial<ChatMessage>;
       return isChatRole(role) && typeof content === "string";
     })
-    .map((message) => ({
+    .map(message => ({
       role: message.role,
       content: message.content.trim(),
     }))
-    .filter((message) => message.content.length > 0);
+    .filter(message => message.content.length > 0);
 
   return messages.length > 0 ? messages : null;
 }
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   if (!messages) {
     return NextResponse.json(
       { error: "Provide at least one chat message." },
-      { status: 400 },
+      { status: 400 }
     );
   }
 

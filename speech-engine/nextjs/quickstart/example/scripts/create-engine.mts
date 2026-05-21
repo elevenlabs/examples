@@ -7,7 +7,9 @@ const API_KEY = process.env.ELEVENLABS_API_KEY?.trim();
 const PUBLIC_WS_URL = process.env.PUBLIC_WS_URL?.trim();
 
 if (!API_KEY) {
-  throw new Error("Set ELEVENLABS_API_KEY in .env before creating a Speech Engine.");
+  throw new Error(
+    "Set ELEVENLABS_API_KEY in .env before creating a Speech Engine."
+  );
 }
 
 if (!PUBLIC_WS_URL) {

@@ -42,25 +42,27 @@ export function isChatRole(role: unknown): role is ChatRole {
 
 export function normalizeChatMessages(messages: ChatMessage[]) {
   return messages
-    .map((message) => ({
+    .map(message => ({
       role: message.role,
       content: message.content.trim().slice(0, MAX_MESSAGE_CHARS),
     }))
-    .filter((message) => message.content.length > 0)
+    .filter(message => message.content.length > 0)
     .slice(-MAX_HISTORY_MESSAGES);
 }
 
-export function transcriptToChatMessages(transcript: SpeechTranscriptMessage[]) {
+export function transcriptToChatMessages(
+  transcript: SpeechTranscriptMessage[]
+) {
   return normalizeChatMessages(
-    transcript.map((message) => ({
+    transcript.map(message => ({
       role: message.role === "agent" ? "assistant" : "user",
       content: message.content,
-    })),
+    }))
   );
 }
 
 function toResponseInput(messages: ChatMessage[]) {
-  return normalizeChatMessages(messages).map((message) => ({
+  return normalizeChatMessages(messages).map(message => ({
     role: message.role,
     content: message.content,
   }));
@@ -68,7 +70,7 @@ function toResponseInput(messages: ChatMessage[]) {
 
 export async function createAssistantReply(
   messages: ChatMessage[],
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   const response = await getOpenAIClient().responses.create(
     {
@@ -76,7 +78,7 @@ export async function createAssistantReply(
       instructions: ASSISTANT_INSTRUCTIONS,
       input: toResponseInput(messages),
     },
-    { signal },
+    { signal }
   );
 
   return (
@@ -87,7 +89,7 @@ export async function createAssistantReply(
 
 export async function createAssistantStream(
   messages: ChatMessage[],
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   const stream = await getOpenAIClient().responses.create(
     {
@@ -96,7 +98,7 @@ export async function createAssistantStream(
       input: toResponseInput(messages),
       stream: true,
     },
-    { signal },
+    { signal }
   );
 
   return {

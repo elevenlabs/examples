@@ -3,7 +3,9 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-function getRequiredEnv(name: "ELEVENLABS_API_KEY" | "ELEVENLABS_SPEECH_ENGINE_ID") {
+function getRequiredEnv(
+  name: "ELEVENLABS_API_KEY" | "ELEVENLABS_SPEECH_ENGINE_ID"
+) {
   const value = process.env[name]?.trim();
 
   if (!value) {
@@ -30,7 +32,7 @@ export async function GET() {
 
     return NextResponse.json(
       { error: "Unable to create a conversation token.", details },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

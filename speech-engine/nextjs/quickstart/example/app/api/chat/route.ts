@@ -49,20 +49,20 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json(
       { error: "Request body must be valid JSON." },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
   const messages = parseMessages(
     typeof body === "object" && body !== null
       ? (body as Record<string, unknown>).messages
-      : null,
+      : null
   );
 
   if (!messages || messages.length === 0) {
     return NextResponse.json(
       { error: "Send at least one user or assistant message." },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { error: "Unable to generate a chat response.", details },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

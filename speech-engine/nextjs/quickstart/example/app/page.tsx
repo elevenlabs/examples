@@ -44,8 +44,8 @@ function roleLabel(role: DemoRole) {
 
 function toApiMessages(messages: DemoMessage[]): ApiMessage[] {
   return messages
-    .filter((message) => !message.pending && !message.error)
-    .map((message) => ({
+    .filter(message => !message.pending && !message.error)
+    .map(message => ({
       role: message.role,
       content: message.content,
     }));
@@ -54,7 +54,7 @@ function toApiMessages(messages: DemoMessage[]): ApiMessage[] {
 function buildVoiceContext(messages: DemoMessage[]) {
   return toApiMessages(messages)
     .slice(-12)
-    .map((message) => `${roleLabel(message.role)}: ${message.content}`)
+    .map(message => `${roleLabel(message.role)}: ${message.content}`)
     .join("\n");
 }
 
@@ -62,12 +62,12 @@ function appendOrUpdateVoiceMessage(
   messages: DemoMessage[],
   role: DemoRole,
   content: string,
-  eventId?: number,
+  eventId?: number
 ) {
   const id = eventId
     ? `voice-${role}-${eventId}`
     : createMessageId(`voice-${role}`);
-  const existingIndex = messages.findIndex((message) => message.id === id);
+  const existingIndex = messages.findIndex(message => message.id === id);
 
   if (existingIndex === -1) {
     return [
@@ -82,7 +82,7 @@ function appendOrUpdateVoiceMessage(
   }
 
   return messages.map((message, index) =>
-    index === existingIndex ? { ...message, content } : message,
+    index === existingIndex ? { ...message, content } : message
   );
 }
 
@@ -96,7 +96,7 @@ async function getConversationToken() {
 
   if (!response.ok || !data.token) {
     throw new Error(
-      data.details || data.error || "Failed to get a conversation token.",
+      data.details || data.error || "Failed to get a conversation token."
     );
   }
 
@@ -159,7 +159,7 @@ function ConversationView() {
     onConnect: () => {
       setVoiceError(null);
     },
-    onDisconnect: (details) => {
+    onDisconnect: details => {
       if (details.reason === "error") {
         setVoiceError(details.message);
         return;
@@ -176,7 +176,7 @@ function ConversationView() {
         }
       }
     },
-    onError: (message) => {
+    onError: message => {
       setVoiceError(message);
     },
     onMessage: ({ role, message, event_id }) => {
@@ -196,13 +196,13 @@ function ConversationView() {
         }
       }
 
-      setMessages((currentMessages) =>
+      setMessages(currentMessages =>
         appendOrUpdateVoiceMessage(
           currentMessages,
           role === "agent" ? "assistant" : "user",
           content,
-          event_id,
-        ),
+          event_id
+        )
       );
     },
   });
@@ -251,14 +251,14 @@ function ConversationView() {
       try {
         pendingTypedVoiceMessagesRef.current.push(content);
         conversation.sendUserMessage(content);
-        setMessages((currentMessages) => [...currentMessages, userMessage]);
+        setMessages(currentMessages => [...currentMessages, userMessage]);
         setDraft("");
         setChatError(null);
         setVoiceError(null);
       } catch (error: unknown) {
         pendingTypedVoiceMessagesRef.current =
           pendingTypedVoiceMessagesRef.current.filter(
-            (pendingContent) => pendingContent !== content,
+            pendingContent => pendingContent !== content
           );
         setVoiceError(getErrorMessage(error));
       }
@@ -276,7 +276,7 @@ function ConversationView() {
     };
     const nextHistory = [...chatHistory, { role: "user" as const, content }];
 
-    setMessages((currentMessages) => [
+    setMessages(currentMessages => [
       ...currentMessages,
       userMessage,
       pendingAssistant,
@@ -307,19 +307,19 @@ function ConversationView() {
         throw new Error("Chat response did not include a message.");
       }
 
-      setMessages((currentMessages) =>
-        currentMessages.map((message) =>
+      setMessages(currentMessages =>
+        currentMessages.map(message =>
           message.id === pendingAssistantId
             ? { ...message, content: data.message ?? "", pending: false }
-            : message,
-        ),
+            : message
+        )
       );
     } catch (error: unknown) {
       const message = getErrorMessage(error);
 
       setChatError(message);
-      setMessages((currentMessages) =>
-        currentMessages.map((currentMessage) =>
+      setMessages(currentMessages =>
+        currentMessages.map(currentMessage =>
           currentMessage.id === pendingAssistantId
             ? {
                 ...currentMessage,
@@ -327,8 +327,8 @@ function ConversationView() {
                 pending: false,
                 error: true,
               }
-            : currentMessage,
-        ),
+            : currentMessage
+        )
       );
     } finally {
       setIsSending(false);
@@ -340,7 +340,7 @@ function ConversationView() {
       event.preventDefault();
       void sendChatMessage();
     },
-    [sendChatMessage],
+    [sendChatMessage]
   );
 
   const handleComposerKeyDown = useCallback(
@@ -350,7 +350,7 @@ function ConversationView() {
         void sendChatMessage();
       }
     },
-    [sendChatMessage],
+    [sendChatMessage]
   );
 
   const startVoiceMode = useCallback(async () => {
@@ -364,7 +364,7 @@ function ConversationView() {
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach((track) => track.stop());
+      stream.getTracks().forEach(track => track.stop());
 
       const historyId = await registerVoiceHistory(chatHistory);
       const token = await getConversationToken();
@@ -381,7 +381,7 @@ function ConversationView() {
             firstMessage: VOICE_FIRST_MESSAGE,
           },
         },
-        onConversationCreated: (voiceConversation) => {
+        onConversationCreated: voiceConversation => {
           const conversationId = voiceConversation.getId();
           const activeHistoryId = voiceHistoryIdRef.current;
 
@@ -401,7 +401,7 @@ function ConversationView() {
           if (context) {
             voiceConversation.sendContextualUpdate(
               `Typed chat before voice mode:\n${context}`,
-              { contextId: "typed-chat-history" },
+              { contextId: "typed-chat-history" }
             );
           }
         },
@@ -484,7 +484,7 @@ function ConversationView() {
               </p>
             ) : (
               <div className="space-y-4">
-                {messages.map((message) => {
+                {messages.map(message => {
                   const isAssistant = message.role === "assistant";
 
                   return (
@@ -519,17 +519,14 @@ function ConversationView() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-2">
-            <label
-              htmlFor="chat-message"
-              className="text-xs text-neutral-400"
-            >
+            <label htmlFor="chat-message" className="text-xs text-neutral-400">
               Message
             </label>
             <div className="flex items-end gap-3">
               <textarea
                 id="chat-message"
                 value={draft}
-                onChange={(event) => setDraft(event.target.value)}
+                onChange={event => setDraft(event.target.value)}
                 onKeyDown={handleComposerKeyDown}
                 rows={3}
                 placeholder={

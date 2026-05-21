@@ -1,67 +1,56 @@
 # Speech Engine Quickstart (Next.js)
 
-Add voice to your own LLM-backed chat agent with ElevenLabs Speech Engine, a Node WebSocket server, and a Next.js browser client.
+Add real-time voice to your own LLM-backed agent: a Speech Engine WebSocket server streams OpenAI responses to ElevenLabs, and a Next.js client starts WebRTC voice sessions.
 
 ## Setup
 
 1. Copy the environment file and add your credentials:
 
    ```bash
-   cp .env.example .env.local
+   cp .env.example .env
    ```
 
-   Then edit `.env.local` and set:
-   - `ELEVENLABS_API_KEY`
-   - `OPENAI_API_KEY`
-   - `OPENAI_MODEL`
+   Then edit `.env` and set:
+   - `ELEVENLABS_API_KEY` — [create one in the dashboard](https://elevenlabs.io/app/settings/api-keys)
+   - `OPENAI_API_KEY` — for the assistant LLM in the Speech Engine server
+   - `PUBLIC_WS_URL` — public `wss://` URL for your Speech Engine WebSocket (see step 2)
 
-2. Install dependencies:
-
-   ```bash
-   pnpm install
-   ```
-
-3. Expose the Speech Engine server with ngrok:
+2. Expose port **3001** with [ngrok](https://ngrok.com/) (run this before creating the Speech Engine resource):
 
    ```bash
    ngrok http 3001
    ```
 
-   Copy the forwarding URL into `.env.local` as `PUBLIC_WS_URL` with `/ws` appended, for example `wss://abc123.ngrok.app/ws`. Use `wss://` (the create script accepts `https://` and converts it).
+   Set `PUBLIC_WS_URL` to your forwarding URL with `/ws` appended, for example `wss://abc123.ngrok-free.app/ws`.
 
-4. Create a Speech Engine and copy the printed id into `.env.local`:
+3. Install dependencies:
+
+   ```bash
+   pnpm install
+   ```
+
+4. Create the Speech Engine resource and enable client first-message overrides:
 
    ```bash
    pnpm run speech-engine:create
+   pnpm run speech-engine:enable-first-message
    ```
 
-   Set the value as `ELEVENLABS_SPEECH_ENGINE_ID`. If your ngrok URL changes, run this command again and update the id.
+   Copy the printed Speech Engine ID into `.env` as `ELEVENLABS_SPEECH_ENGINE_ID`.
 
 ## Run
 
-Start the Speech Engine server:
+Three processes must run together:
 
-```bash
-pnpm run speech-engine:server
-```
-
-In another terminal, start the Next.js app:
-
-```bash
-pnpm run dev
-```
+1. **ngrok** — `ngrok http 3001`
+2. **Speech Engine server** — `pnpm run speech-engine:server` (port 3001)
+3. **Next.js app** — `pnpm run dev` (port 3000)
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Usage
 
-- Keep ngrok, `pnpm run speech-engine:server`, and `pnpm run dev` running.
-- Click **Start conversation** and allow microphone access. The app fetches a conversation token from the server and starts a WebRTC voice session.
-- Once connected, speak naturally. ElevenLabs transcribes your speech, your server streams an OpenAI response back, and ElevenLabs plays the generated voice response in the browser.
-- Click **Stop conversation** to end the session.
-
-## Troubleshooting
-
-If the browser cannot connect, check the Speech Engine server terminal first. You should see a session log when the browser starts a conversation. If you do not, confirm ngrok is still forwarding to port `3001`, `PUBLIC_WS_URL` includes `/ws`, and `ELEVENLABS_SPEECH_ENGINE_ID` points to an engine created with that URL. If you previously created the Speech Engine with a different ngrok URL, run `pnpm run speech-engine:create` again and update the id.
-
-When you speak, the Speech Engine server terminal should log `[speech-engine] transcript:` followed by `[speech-engine] response sent for:`. If you see `onTranscript error` instead, fix the reported OpenAI or server issue first. A backend failure can also surface in the browser as a client SDK error about `error_type`.
+- Click **Start conversation** and allow microphone access when prompted.
+- Speak naturally; the agent responds with streamed speech. With `debug: true` on the server, transcripts and responses log to the terminal.
+- Click **End conversation** to stop the session.
+- The agent greets first using `overrides.agent.firstMessage` (requires `speech-engine:enable-first-message` once per Speech Engine ID).

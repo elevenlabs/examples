@@ -13,13 +13,16 @@ type SpeechTranscriptMessage = {
 };
 
 const MAX_HISTORY_MESSAGES = 24;
-const MAX_MESSAGE_CHARS = 6000;
+const MAX_MESSAGE_CHARS = 2_000;
 
 let openai: OpenAI | null = null;
 
-export const ASSISTANT_MODEL = process.env.OPENAI_MODEL ?? "gpt-4o";
+const ASSISTANT_MODEL = process.env.OPENAI_MODEL ?? "gpt-4o";
+
 export const ASSISTANT_INSTRUCTIONS =
-  "You are a helpful voice assistant. Keep responses concise and conversational.";
+  "You are a helpful assistant for a voice-and-text chat demo. Keep responses concise, conversational, and easy to speak aloud.";
+
+export const VOICE_FIRST_MESSAGE = "Hello! How can I help you today?";
 
 function getOpenAIClient() {
   if (!process.env.OPENAI_API_KEY) {
@@ -78,7 +81,7 @@ export async function createAssistantReply(
 
   return (
     response.output_text.trim() ||
-    "I could not generate a response. Try sending that again."
+    "I could not generate a response. Please try again."
   );
 }
 
@@ -86,7 +89,7 @@ export async function createAssistantStream(
   messages: ChatMessage[],
   signal?: AbortSignal,
 ) {
-  return getOpenAIClient().responses.create(
+  const stream = await getOpenAIClient().responses.create(
     {
       model: ASSISTANT_MODEL,
       instructions: ASSISTANT_INSTRUCTIONS,
@@ -95,4 +98,14 @@ export async function createAssistantStream(
     },
     { signal },
   );
+
+  return {
+    async *[Symbol.asyncIterator]() {
+      for await (const event of stream) {
+        if (event.type === "response.output_text.delta" && event.delta) {
+          yield event.delta;
+        }
+      }
+    },
+  };
 }

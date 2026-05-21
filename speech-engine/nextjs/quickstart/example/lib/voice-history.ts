@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
-import { normalizeChatMessages, type ChatMessage } from "./assistant";
+import { normalizeChatMessages, type ChatMessage } from "@/lib/assistant";
 
 type VoiceHistoryStore = {
   histories: Record<string, ChatMessage[]>;
@@ -21,7 +21,10 @@ async function readStore(): Promise<VoiceHistoryStore> {
       links: parsed.links ?? {},
     };
   } catch {
-    return { histories: {}, links: {} };
+    return {
+      histories: {},
+      links: {},
+    };
   }
 }
 

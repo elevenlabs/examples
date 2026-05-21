@@ -1,103 +1,35 @@
-import { resolve as resolvePath } from "node:path";
-
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
-import dotenv from "dotenv";
+import "dotenv/config";
 
-const envPath = resolvePath(process.cwd(), ".env.local");
+import { enableFirstMessageOverride } from "../lib/speech-engine-overrides";
 
-dotenv.config({ path: envPath });
+const API_KEY = process.env.ELEVENLABS_API_KEY?.trim();
+const PUBLIC_WS_URL = process.env.PUBLIC_WS_URL?.trim();
 
-function requireEnv(name: string): string {
-  const value = process.env[name]?.trim();
-
-  if (!value) {
-    throw new Error(`Missing ${name} in ${envPath}.`);
-  }
-
-  return value;
+if (!API_KEY) {
+  throw new Error("Set ELEVENLABS_API_KEY in .env before creating a Speech Engine.");
 }
 
-function normalizeWebSocketUrl(url: string): string {
-  const trimmed = url.trim();
-
-  if (trimmed.startsWith("wss://")) {
-    return trimmed;
-  }
-
-  if (trimmed.startsWith("https://")) {
-    return `wss://${trimmed.slice("https://".length)}`;
-  }
-
-  if (trimmed.startsWith("http://")) {
-    return `ws://${trimmed.slice("http://".length)}`;
-  }
-
-  throw new Error(
-    "PUBLIC_WS_URL must start with wss://, https://, ws://, or http://.",
-  );
+if (!PUBLIC_WS_URL) {
+  throw new Error("Set PUBLIC_WS_URL in .env before creating a Speech Engine.");
 }
 
-function readSpeechEngineId(engine: unknown): string {
-  if (!engine || typeof engine !== "object") {
-    throw new Error("Speech Engine create response did not include an id.");
-  }
-
-  const record = engine as Record<string, unknown>;
-  const id = record.engineId ?? record.speechEngineId ?? record.speech_engine_id;
-
-  if (typeof id !== "string" || id.length === 0) {
-    throw new Error("Speech Engine create response did not include an id.");
-  }
-
-  return id;
-}
-
-async function main() {
-  const apiKey = requireEnv("ELEVENLABS_API_KEY");
-  const wsUrl = normalizeWebSocketUrl(requireEnv("PUBLIC_WS_URL"));
-  const client = new ElevenLabsClient({ apiKey });
-
-  console.log(`Creating Speech Engine with WebSocket URL: ${wsUrl}`);
-
-  const engine = await client.speechEngine.create({
-    name: "Speech Engine Quickstart",
-    speechEngine: {
-      wsUrl,
-    },
-  });
-  const speechEngineId = readSpeechEngineId(engine);
-
-  const engines = await client.speechEngine.list();
-  const duplicates = engines.speechEngines.filter(
-    (entry) => entry.speechEngineId !== speechEngineId,
-  );
-
-  console.log("Speech Engine created successfully.");
-  console.log(`Speech Engine ID: ${speechEngineId}`);
-  console.log("");
-  console.log(`Copy this into .env.local:`);
-  console.log(`ELEVENLABS_SPEECH_ENGINE_ID=${speechEngineId}`);
-
-  if (duplicates.length > 0) {
-    console.log("");
-    console.warn(
-      `Warning: ${duplicates.length} other Speech Engine resource(s) still exist.`,
-    );
-    console.warn(
-      "Delete unused engines in the ElevenLabs dashboard or via the API.",
-    );
-    console.warn(
-      "Multiple engines pointing at the same ws_url can cause upstream connection failures.",
-    );
-  }
-}
-
-main().catch((error: unknown) => {
-  const message =
-    error instanceof Error ? error.message : "Failed to create Speech Engine.";
-
-  console.error(message);
-  process.exitCode = 1;
+const elevenlabs = new ElevenLabsClient({
+  apiKey: API_KEY,
 });
 
-export {};
+const engine = await elevenlabs.speechEngine.create({
+  name: "Speech Engine Quickstart",
+  speechEngine: {
+    wsUrl: PUBLIC_WS_URL,
+  },
+});
+
+await enableFirstMessageOverride(elevenlabs, engine.engineId);
+
+console.log(`Speech Engine ID: ${engine.engineId}`);
+console.log("First-message override enabled for this Speech Engine.");
+console.log("Next steps:");
+console.log(`1. Add ELEVENLABS_SPEECH_ENGINE_ID=${engine.engineId} to .env`);
+console.log("2. Run `pnpm run speech-engine:server`");
+console.log("3. Run `pnpm run dev`");

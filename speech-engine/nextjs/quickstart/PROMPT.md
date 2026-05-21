@@ -2,56 +2,82 @@ Before writing any code, invoke the `/speech-engine` skill to learn the correct 
 
 ## 1. `package.json`
 
-- Add `@elevenlabs/react`, `@elevenlabs/elevenlabs-js`, `openai`, and `dotenv`.
-- Add `tsx` as a dev dependency.
-- Add scripts: `speech-engine:create` runs `scripts/create-engine.mts`; `speech-engine:server` runs `server.mts`.
+- Add `@elevenlabs/react`, `@elevenlabs/elevenlabs-js`, `openai`, `dotenv`, and `tsx`.
+- Add scripts: `speech-engine:create` (`tsx scripts/create-engine.mts`), `speech-engine:enable-first-message` (`tsx scripts/enable-first-message.mts`), `speech-engine:server` (`tsx server.mts`).
+- Pin `livekit-client` to `2.16.1` under `pnpm.overrides` for WebRTC stability.
 
 ## 2. `.env.example`
 
-- Include `ELEVENLABS_API_KEY`, `ELEVENLABS_SPEECH_ENGINE_ID`, `PUBLIC_WS_URL`, `OPENAI_API_KEY`, and `OPENAI_MODEL=gpt-4o`.
+- Document `ELEVENLABS_API_KEY`, `ELEVENLABS_SPEECH_ENGINE_ID`, `OPENAI_API_KEY`, and `PUBLIC_WS_URL` (`wss://…/ws` from ngrok).
 
 ## 3. `scripts/create-engine.mts`
 
-Small script that creates a Speech Engine resource.
+- Load env with `dotenv/config`.
+- Create a Speech Engine with `elevenlabs.speechEngine.create`, using `speechEngine.wsUrl` from `PUBLIC_WS_URL`.
+- Call a shared helper to enable `overrides.firstMessage` on the new resource.
+- Print `engineId` and next-step instructions.
 
-- Load env from `.env.local`.
-- Validate `ELEVENLABS_API_KEY` and `PUBLIC_WS_URL`.
-- Accept `wss://` or `https://` ngrok URLs with `/ws` appended. Normalize `https://` to `wss://` before calling the API.
-- Use `ElevenLabsClient` and call `client.speechEngine.create({ name, speechEngine: { wsUrl } })`.
-- Print the returned `engineId` or `speechEngineId` clearly so it can be copied to `ELEVENLABS_SPEECH_ENGINE_ID`.
+## 4. `scripts/enable-first-message.mts`
 
-## 4. `server.mts`
+- Update an existing Speech Engine (`ELEVENLABS_SPEECH_ENGINE_ID`) so the client may set `overrides.agent.firstMessage`.
 
-Node Speech Engine server that listens on port `3001` and attaches the SDK on `/ws`.
+## 5. `lib/speech-engine-overrides.ts`
 
-- Load env from `.env.local`.
-- Validate `ELEVENLABS_API_KEY`, `ELEVENLABS_SPEECH_ENGINE_ID`, `OPENAI_API_KEY`, and `OPENAI_MODEL`.
-- Create a Node HTTP server with `/health`.
-- Fetch the resource with `client.speechEngine.get(speechEngineId)`, then call `engine.attach(httpServer, "/ws", callbacks)`.
-- In `onTranscript`, call `openai.responses.create` with `stream: true`, concise voice-assistant instructions, and the full transcript mapped to OpenAI roles (`agent` -> `assistant`).
-- Pass the provided `AbortSignal` to OpenAI so user interruptions cancel the in-flight response.
-- `await session.sendResponse(response)` with the OpenAI stream.
-- Wrap `onTranscript` in try/catch; on failure, log the error and send a short fallback string with `session.sendResponse(...)` unless the turn was aborted.
-- Log `onInit`, `onClose`, `onDisconnect`, and `onError`; keep `debug: true` for local development.
+- Export `enableFirstMessageOverride(client, speechEngineId)` using `speechEngine.update` with `overrides: { firstMessage: true }`.
 
-## 5. `app/api/token/route.ts`
+## 6. `lib/assistant.ts`
 
-Secure GET endpoint that returns a fresh conversation token for `ELEVENLABS_SPEECH_ENGINE_ID`.
-Never expose `ELEVENLABS_API_KEY` to the client.
+- Shared OpenAI Responses API helpers: `ASSISTANT_INSTRUCTIONS`, `VOICE_FIRST_MESSAGE`, `isChatRole`, `normalizeChatMessages`, `transcriptToChatMessages`, `createAssistantReply(messages, signal)`, and `createAssistantStream(messages, signal)`.
+- Map Speech Engine `agent` role to OpenAI `assistant`; keep responses concise.
+- Normalize history before sending it to OpenAI: trim content, drop empty messages, cap message count and per-message length.
 
-- Use `ElevenLabsClient`.
-- Call `client.conversationalAi.conversations.getWebrtcToken({ agentId: speechEngineId })`.
-- Return `{ token }`; return readable JSON errors for missing env and API failures.
+## 7. `lib/voice-history.ts`
 
-## 6. `app/page.tsx`
+- Add a tiny local store that lets the Next.js app hand typed chat history to the standalone Speech Engine server.
+- Store normalized `ChatMessage[]` in `.next/cache/voice-history.json` by random `historyId`.
+- Export `createVoiceHistory(messages)`, `linkVoiceHistory(conversationId, historyId)`, and `loadVoiceHistory(conversationId)`.
+- Keep this demo-only and file-backed; no database or auth layer.
 
-Minimal Speech Engine voice chat page.
+## 8. `server.mts`
 
-- Wrap the page in `ConversationProvider` and use `useConversation` from `@elevenlabs/react`.
-- Show setup reminders: run ngrok for port `3001`, create a Speech Engine with `PUBLIC_WS_URL`, run `pnpm run speech-engine:server`, then run the Next.js app.
-- Start voice sessions by requesting microphone access, fetching `/api/token`, and calling `conversation.startSession({ conversationToken: token })`.
-- Do not set `overrides.agent.firstMessage` unless the Speech Engine resource explicitly allows that override.
-- Track a local starting state so users cannot launch multiple overlapping sessions while WebRTC is connecting.
-- Show Start/Stop controls, connection status, and inline errors.
-- Use callbacks such as `onConnect`, `onDisconnect`, `onMessage`, and `onError` to render a running transcript when events are available.
-- Rely on the SDK's connection-type inference; do not hardcode `connectionType`.
+- Standalone HTTP server on port **3001** with `speechEngine.attach(SPEECH_ENGINE_ID, httpServer, "/ws", { debug: true, … })`.
+- `onTranscript`: load any typed chat history linked to `session.conversationId`, append `transcriptToChatMessages(transcript)`, pass `AbortSignal` into `createAssistantStream`, and `session.sendResponse(stream)`.
+- Cache loaded initial history per conversation and retry briefly because the browser may link history immediately after the voice conversation is created.
+- Log `onInit`, `onClose`, and `onError`. Require `ELEVENLABS_SPEECH_ENGINE_ID` and `OPENAI_API_KEY`.
+
+## 9. `app/api/chat/route.ts`
+
+- Secure POST route for regular typed chat.
+- Accept `{ messages }`, validate each message as `{ role: "user" | "assistant", content: string }`, cap request history, and call `createAssistantReply(messages, request.signal)`.
+- Return `{ message }`; return JSON errors for invalid payloads or OpenAI failures.
+- This route and voice mode must use the same `ChatMessage` shape so context can move between modes.
+
+## 10. `app/api/voice-history/route.ts`
+
+- POST route that accepts the current typed chat history before voice mode starts.
+- Validate and normalize messages with `isChatRole`, call `createVoiceHistory(messages)`, and return `{ historyId }`.
+- Return a 400 if no valid messages are provided.
+
+## 11. `app/api/voice-history/link/route.ts`
+
+- POST route that accepts `{ historyId, conversationId }` from the browser once the Speech Engine client creates a voice conversation.
+- Call `linkVoiceHistory(conversationId, historyId)` and return `{ ok: true }`, or 404 if the history id is unknown.
+
+## 12. `app/api/token/route.ts`
+
+- Secure GET route; never expose `ELEVENLABS_API_KEY` to the client.
+- Return `{ token }` from `conversationalAi.conversations.getWebrtcToken({ agentId: ELEVENLABS_SPEECH_ENGINE_ID })`.
+- Handle missing env and API errors with JSON error responses.
+
+## 13. `app/page.tsx`
+
+- Build a single chat UI that works like a normal assistant chat first, then can switch into voice mode without losing context.
+- Keep one `messages` state array with `{ id, role: "user" | "assistant", content, channel: "chat" | "voice", pending?, error? }`.
+- Text submit path: append the user message, POST the full normalized history to `/api/chat`, replace the pending assistant message with the reply, and keep the composer usable.
+- Voice start path: request microphone access, POST current non-pending/non-error chat history to `/api/voice-history`, fetch `/api/token`, then `startSession({ conversationToken: token, overrides: { agent: { firstMessage: VOICE_FIRST_MESSAGE } }, onConversationCreated })`.
+- In `onConversationCreated`, link the stored `historyId` to `voiceConversation.getId()` with `/api/voice-history/link`; if useful, also send a contextual update summarizing recent typed chat.
+- Voice event path: use `useConversation({ onMessage })` to append or update transcript messages in the same `messages` array, mapping SDK role `agent` to local role `assistant`.
+- While voice is connected, allow typed messages too: append them to the same thread and call `conversation.sendUserMessage(content)`; avoid duplicating echoes from `onMessage`.
+- The next typed chat after voice mode must include voice transcript messages in the history sent to `/api/chat`.
+- Show a scrollable message thread, a text composer, a mic/start voice control, a stop voice control, connection status, mute/unmute when connected, and separate chat/voice error messages.
+- Follow `DESIGN.md`; make the page feel like a regular chat app with voice as a mode, not a voice-only demo.

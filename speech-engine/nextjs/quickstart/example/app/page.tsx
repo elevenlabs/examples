@@ -374,7 +374,7 @@ function ConversationView() {
       linkedVoiceConversationIdsRef.current.clear();
       setVoiceError(null);
 
-      conversation.startSession({
+      await conversation.startSession({
         conversationToken: token,
         overrides: {
           agent: {

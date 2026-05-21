@@ -49,7 +49,10 @@ node -e "
 "
 
 # Create route and script directories
+mkdir -p app/api/chat
 mkdir -p app/api/token
+mkdir -p app/api/voice-history
+mkdir -p app/api/voice-history/link
 mkdir -p scripts
 mkdir -p lib
 

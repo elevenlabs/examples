@@ -64,7 +64,7 @@ function appendOrUpdateVoiceMessage(
   content: string,
   eventId?: number
 ) {
-  const id = eventId
+  const id = eventId != null
     ? `voice-${role}-${eventId}`
     : createMessageId(`voice-${role}`);
   const existingIndex = messages.findIndex(message => message.id === id);

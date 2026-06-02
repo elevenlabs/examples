@@ -35,7 +35,7 @@ node -e "
   delete pkg.dependencies['@elevenlabs/client'];
   pkg.pnpm = pkg.pnpm || {};
   pkg.pnpm.overrides = pkg.pnpm.overrides || {};
-  pkg.pnpm.overrides['livekit-client'] = '2.16.1';
+  pkg.pnpm.overrides['livekit-client'] = '2.19.1';
   require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
 "
 

@@ -21,14 +21,14 @@ export async function GET(request: Request) {
   const client = new ElevenLabsClient({ apiKey });
 
   try {
-    const { token } =
-      await client.conversationalAi.conversations.getWebrtcToken({
+    const { signedUrl } =
+      await client.conversationalAi.conversations.getSignedUrl({
         agentId,
       });
-    return NextResponse.json({ token });
+    return NextResponse.json({ signedUrl });
   } catch (e) {
     const message =
-      e instanceof Error ? e.message : "Failed to create conversation token.";
+      e instanceof Error ? e.message : "Failed to create signed URL.";
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }

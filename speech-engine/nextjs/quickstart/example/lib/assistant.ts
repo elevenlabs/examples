@@ -22,8 +22,6 @@ const ASSISTANT_MODEL = process.env.OPENAI_MODEL ?? "gpt-4o";
 export const ASSISTANT_INSTRUCTIONS =
   "You are a helpful assistant for a voice-and-text chat demo. Keep responses concise, conversational, and easy to speak aloud.";
 
-export const VOICE_FIRST_MESSAGE = "Hello! How can I help you today?";
-
 function getOpenAIClient() {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY is not configured.");

@@ -11,8 +11,6 @@ import {
   type KeyboardEvent,
 } from "react";
 
-import { VOICE_FIRST_MESSAGE } from "@/lib/assistant";
-
 type DemoRole = "user" | "assistant";
 type DemoChannel = "chat" | "voice";
 
@@ -379,7 +377,7 @@ function ConversationView() {
         conversationToken: token,
         overrides: {
           agent: {
-            firstMessage: VOICE_FIRST_MESSAGE,
+            firstMessage: "Hello! How can I help you today?",
           },
         },
         onConversationCreated: voiceConversation => {

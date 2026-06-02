@@ -27,7 +27,7 @@ Before writing any code, invoke the `/speech-engine` skill to learn the correct 
 
 ## 6. `lib/assistant.ts`
 
-- Shared OpenAI Responses API helpers: `ASSISTANT_INSTRUCTIONS`, `VOICE_FIRST_MESSAGE`, `isChatRole`, `normalizeChatMessages`, `transcriptToChatMessages`, `createAssistantReply(messages, signal)`, and `createAssistantStream(messages, signal)`.
+- Shared OpenAI Responses API helpers: `ASSISTANT_INSTRUCTIONS`, `isChatRole`, `normalizeChatMessages`, `transcriptToChatMessages`, `createAssistantReply(messages, signal)`, and `createAssistantStream(messages, signal)`.
 - Map Speech Engine `agent` role to OpenAI `assistant`; keep responses concise.
 - Normalize history before sending it to OpenAI: trim content, drop empty messages, cap message count and per-message length.
 
@@ -74,7 +74,7 @@ Before writing any code, invoke the `/speech-engine` skill to learn the correct 
 - Build a single chat UI that works like a normal assistant chat first, then can switch into voice mode without losing context.
 - Keep one `messages` state array with `{ id, role: "user" | "assistant", content, channel: "chat" | "voice", pending?, error? }`.
 - Text submit path: append the user message, POST the full normalized history to `/api/chat`, replace the pending assistant message with the reply, and keep the composer usable.
-- Voice start path: request microphone access, POST current non-pending/non-error chat history to `/api/voice-history`, fetch `/api/token`, then `startSession({ conversationToken: token, overrides: { agent: { firstMessage: VOICE_FIRST_MESSAGE } }, onConversationCreated })`.
+- Voice start path: request microphone access, POST current non-pending/non-error chat history to `/api/voice-history`, fetch `/api/token`, then start the voice session with an inline `overrides.agent.firstMessage` greeting.
 - In `onConversationCreated`, link the stored `historyId` to `voiceConversation.getId()` with `/api/voice-history/link`; if useful, also send a contextual update summarizing recent typed chat.
 - Voice event path: use `useConversation({ onMessage })` to append or update transcript messages in the same `messages` array, mapping SDK role `agent` to local role `assistant`.
 - While voice is connected, allow typed messages too: append them to the same thread and call `conversation.sendUserMessage(content)`; avoid duplicating echoes from `onMessage`.

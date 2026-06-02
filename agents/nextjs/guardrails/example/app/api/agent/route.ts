@@ -1,5 +1,4 @@
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
-import type { ConversationConfig } from "@elevenlabs/elevenlabs-js/api/types/ConversationConfig";
 import { ClientEvent } from "@elevenlabs/elevenlabs-js/api/types/ClientEvent";
 import { NextResponse } from "next/server";
 
@@ -57,19 +56,6 @@ export async function POST() {
   const { client, error } = getClient();
   if (error) return error;
 
-  const clientEvents: NonNullable<ConversationConfig["clientEvents"]> = [
-    ClientEvent.Audio,
-    ClientEvent.Interruption,
-    ClientEvent.UserTranscript,
-    ClientEvent.TentativeUserTranscript,
-    ClientEvent.AgentResponse,
-    ClientEvent.AgentResponseCorrection,
-    ClientEvent.AgentChatResponsePart,
-    ClientEvent.GuardrailTriggered,
-    ClientEvent.InternalTentativeAgentResponse,
-    ClientEvent.ConversationInitiationMetadata,
-  ];
-
   try {
     const created = await client.conversationalAi.agents.create({
       name: DEMO_AGENT_NAME,
@@ -91,7 +77,18 @@ export async function POST() {
         },
         conversation: {
           textOnly: false,
-          clientEvents,
+          clientEvents: [
+            ClientEvent.Audio,
+            ClientEvent.Interruption,
+            ClientEvent.UserTranscript,
+            ClientEvent.TentativeUserTranscript,
+            ClientEvent.AgentResponse,
+            ClientEvent.AgentResponseCorrection,
+            ClientEvent.AgentChatResponsePart,
+            ClientEvent.GuardrailTriggered,
+            ClientEvent.InternalTentativeAgentResponse,
+            ClientEvent.ConversationInitiationMetadata,
+          ],
         },
       },
       platformSettings: {

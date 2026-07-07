@@ -21,6 +21,14 @@ rsync -a \
 # Copy project-specific README
 cp README.md example/README.md
 
+# Music v2 uses the live REST API directly until SDK support lands.
+node -e "
+  const fs = require('fs');
+  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+  delete pkg.dependencies['@elevenlabs/elevenlabs-js'];
+  fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+"
+
 # Setup env
 if [ -f "$DIR/.env" ]; then
   cp "$DIR/.env" example/.env

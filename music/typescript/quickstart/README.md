@@ -1,6 +1,8 @@
 # ElevenLabs Music — Quickstart Example
 
-Generate an MP3 track from a text prompt using the ElevenLabs JS SDK.
+Generate an MP3 track from a text prompt using the Eleven Music REST API.
+
+This example calls the REST API directly with `model_id: "music_v2"` while SDK support for the v2 model catches up.
 
 ## Setup
 
@@ -18,7 +20,7 @@ Generate an MP3 track from a text prompt using the ElevenLabs JS SDK.
    pnpm install
    ```
 
-The Music API is currently available to paid ElevenLabs users.
+The Eleven Music API is available to paid ElevenLabs users.
 
 ## Run
 

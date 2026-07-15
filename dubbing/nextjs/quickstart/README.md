@@ -1,6 +1,6 @@
 # Dubbing Recorder (Next.js)
 
-Record your voice in the browser, dub it into another language with the ElevenLabs Dubbing API, and play or download the result.
+Record your voice in the browser, dub it into another language with the ElevenLabs Dubbing API (v2, Dubbing Projects), and play or download the result.
 
 ## Setup
 

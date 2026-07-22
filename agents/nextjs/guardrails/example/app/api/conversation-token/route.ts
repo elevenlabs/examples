@@ -1,8 +1,23 @@
-import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+import { ElevenLabsClient, ElevenLabsError } from "@elevenlabs/elevenlabs-js";
 import { NextResponse } from "next/server";
 
+function requireApiKey(): string | null {
+  const key = process.env.ELEVENLABS_API_KEY;
+  return key?.trim() ? key : null;
+}
+
+function apiErrorMessage(err: unknown): string {
+  if (err instanceof ElevenLabsError) {
+    return err.message;
+  }
+  if (err instanceof Error) {
+    return err.message;
+  }
+  return "An unexpected error occurred.";
+}
+
 export async function GET(request: Request) {
-  const apiKey = process.env.ELEVENLABS_API_KEY;
+  const apiKey = requireApiKey();
   if (!apiKey) {
     return NextResponse.json(
       { error: "Server misconfiguration: ELEVENLABS_API_KEY is not set." },
@@ -18,17 +33,18 @@ export async function GET(request: Request) {
     );
   }
 
-  const client = new ElevenLabsClient({ apiKey });
-
   try {
-    const { signedUrl } =
-      await client.conversationalAi.conversations.getSignedUrl({
-        agentId,
-      });
-    return NextResponse.json({ signedUrl });
-  } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "Failed to create signed URL.";
-    return NextResponse.json({ error: message }, { status: 502 });
+    const client = new ElevenLabsClient({ apiKey });
+    const res = await client.conversationalAi.conversations.getWebrtcToken({
+      agentId,
+    });
+    return NextResponse.json({ token: res.token });
+  } catch (err) {
+    const status =
+      err instanceof ElevenLabsError && err.statusCode ? err.statusCode : 502;
+    return NextResponse.json(
+      { error: apiErrorMessage(err) },
+      { status: status >= 400 && status < 600 ? status : 502 }
+    );
   }
 }

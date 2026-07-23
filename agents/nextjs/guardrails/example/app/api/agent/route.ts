@@ -1,4 +1,4 @@
-import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+import { ElevenLabsClient, ElevenLabsError } from "@elevenlabs/elevenlabs-js";
 import { ClientEvent } from "@elevenlabs/elevenlabs-js/api/types/ClientEvent";
 import type { ConversationConfigInput } from "@elevenlabs/elevenlabs-js/api/types/ConversationConfigInput";
 import { NextResponse } from "next/server";
@@ -15,8 +15,13 @@ const SYSTEM_PROMPT = `You are a friendly banking voice assistant for the Eleven
 - Do not recommend investments, specific stocks, ETFs, crypto, or portfolio allocations.
 - If asked for investment advice, explain briefly that you cannot provide recommendations and suggest speaking with a licensed financial advisor or using official educational resources instead.`;
 
+function requireApiKey(): string | null {
+  const key = process.env.ELEVENLABS_API_KEY;
+  return key?.trim() ? key : null;
+}
+
 function getClient() {
-  const apiKey = process.env.ELEVENLABS_API_KEY;
+  const apiKey = requireApiKey();
   if (!apiKey) {
     return {
       error: NextResponse.json(
@@ -26,6 +31,23 @@ function getClient() {
     };
   }
   return { client: new ElevenLabsClient({ apiKey }) };
+}
+
+function apiErrorMessage(err: unknown): string {
+  if (err instanceof ElevenLabsError) {
+    return err.message;
+  }
+  if (err instanceof Error) {
+    return err.message;
+  }
+  return "An unexpected error occurred.";
+}
+
+function apiErrorStatus(err: unknown): number {
+  if (err instanceof ElevenLabsError && err.statusCode) {
+    return err.statusCode >= 400 && err.statusCode < 600 ? err.statusCode : 502;
+  }
+  return 502;
 }
 
 export async function GET(request: Request) {
@@ -47,9 +69,10 @@ export async function GET(request: Request) {
       agentName: agent.name,
     });
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "Failed to load agent from ElevenLabs.";
-    return NextResponse.json({ error: message }, { status: 502 });
+    return NextResponse.json(
+      { error: apiErrorMessage(e) },
+      { status: apiErrorStatus(e) }
+    );
   }
 }
 
@@ -106,6 +129,8 @@ export async function POST() {
                   name: "No investment recommendations",
                   isEnabled: true,
                   executionMode: "blocking",
+                  model: "gemini-2.5-flash-lite",
+                  historyMessageCount: 1,
                   prompt:
                     "Block any response that recommends investments, suggests specific stocks, ETFs, funds, bonds, crypto, or portfolio allocations, or otherwise gives personalized financial or investment advice. If the agent starts giving investment recommendations, end the conversation immediately.",
                   triggerAction: { type: "end_call" },
@@ -127,8 +152,9 @@ export async function POST() {
       agentName: DEMO_AGENT_NAME,
     });
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "Failed to create agent on ElevenLabs.";
-    return NextResponse.json({ error: message }, { status: 502 });
+    return NextResponse.json(
+      { error: apiErrorMessage(e) },
+      { status: apiErrorStatus(e) }
+    );
   }
 }

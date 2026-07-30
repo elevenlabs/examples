@@ -36,5 +36,8 @@
     "overrides": {
       "livekit-client": "2.19.1"
     }
+  },
+  "overrides": {
+    "postcss": "8.5.12"
   }
 }

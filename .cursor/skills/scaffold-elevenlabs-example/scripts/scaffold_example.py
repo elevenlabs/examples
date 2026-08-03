@@ -75,7 +75,7 @@ def pick_reference(paths: list[Path]) -> Path | None:
     if not paths:
         return None
 
-    return sorted(paths, key=lambda path: (path.name != "quickstart", str(path)))[0]
+    return min(paths, key=lambda path: (path.name != "quickstart", str(path)))
 
 
 def find_reference(
@@ -119,7 +119,7 @@ def write_file(path: Path, content: str) -> None:
 
 def main() -> None:
     args = parse_args()
-    product, runtime, slug = parse_example_path(args.path)
+    product, runtime, _slug = parse_example_path(args.path)
 
     target_dir = (REPO_ROOT / args.path.strip().strip("/")).resolve()
     if REPO_ROOT not in target_dir.parents:

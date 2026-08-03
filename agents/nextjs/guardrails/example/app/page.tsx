@@ -112,15 +112,14 @@ function GuardrailsPage({
       const res = await fetch(
         `/api/conversation-token?agentId=${encodeURIComponent(trimmedId)}`
       );
-      const data: { signedUrl?: string; error?: string } = await res.json();
-      if (!res.ok || !data.signedUrl) {
-        setSessionError(data.error ?? "Could not get signed URL.");
+      const data: { token?: string; error?: string } = await res.json();
+      if (!res.ok || !data.token) {
+        setSessionError(data.error ?? "Could not get conversation token.");
         return;
       }
 
       await startSession({
-        connectionType: "websocket",
-        signedUrl: data.signedUrl,
+        conversationToken: data.token,
       });
     } catch (error) {
       const nextMessage =

@@ -4,12 +4,11 @@ import argparse
 import json
 import os
 import sys
-from typing import Any, Optional
+from typing import Any
 
 from dotenv import load_dotenv
 from elevenlabs import ElevenLabs
 from elevenlabs.core.api_error import ApiError
-
 
 DEFAULT_PROMPT = "A chill lo-fi beat with jazzy piano chords"
 OUTPUT_FILE = "output.mp3"
@@ -32,7 +31,7 @@ def _body_as_dict(error: ApiError) -> dict[str, Any]:
     return {}
 
 
-def _find_prompt_suggestion(obj: Any) -> Optional[str]:
+def _find_prompt_suggestion(obj: Any) -> str | None:
     if isinstance(obj, dict):
         suggestion = obj.get("prompt_suggestion")
         if suggestion:
@@ -111,8 +110,7 @@ def main() -> None:
             music_length_ms=10000,
         )
         with open(out_path, "wb") as f:
-            for chunk in audio:
-                f.write(chunk)
+            f.writelines(audio)
     except ApiError as e:
         body_dict = _body_as_dict(e)
         suggestion = _find_prompt_suggestion(body_dict)
@@ -125,9 +123,6 @@ def main() -> None:
         raise SystemExit(1) from None
     except OSError as e:
         print(f"Could not write {out_path}: {e}", file=sys.stderr)
-        raise SystemExit(1) from None
-    except Exception as e:
-        print(f"Unexpected error: {e}", file=sys.stderr)
         raise SystemExit(1) from None
 
     print(f"Saved music to {out_path}")

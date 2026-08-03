@@ -4,6 +4,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from elevenlabs import ElevenLabs
+from elevenlabs.core.api_error import ApiError
 
 load_dotenv()
 
@@ -20,15 +21,14 @@ def main() -> int:
         audio = client.text_to_sound_effects.convert(text=prompt)
 
         with output_path.open("wb") as output_file:
-            for chunk in audio:
-                output_file.write(chunk)
+            output_file.writelines(audio)
 
         print(f"Wrote generated sound effect to {output_path}")
         return 0
     except KeyError:
         print("Missing ELEVENLABS_API_KEY. Add it to .env before running.", file=sys.stderr)
         return 1
-    except Exception as error:
+    except (ApiError, OSError) as error:
         print(f"Sound effect generation failed: {error}", file=sys.stderr)
         return 1
 

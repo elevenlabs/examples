@@ -3,6 +3,7 @@ import sys
 
 from dotenv import load_dotenv
 from elevenlabs import ElevenLabs
+from elevenlabs.core.api_error import ApiError
 
 load_dotenv()
 
@@ -22,12 +23,14 @@ def main():
         )
 
         with open("output.mp3", "wb") as f:
-            for chunk in audio:
-                f.write(chunk)
+            f.writelines(audio)
 
         print("Success! Audio saved to output.mp3")
 
-    except Exception as e:
+    except KeyError:
+        print("Error: Missing ELEVENLABS_API_KEY")
+        sys.exit(1)
+    except (ApiError, OSError) as e:
         print(f"Error: {e}")
         sys.exit(1)
 

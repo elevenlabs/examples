@@ -106,6 +106,8 @@ export async function POST() {
                   name: "No investment recommendations",
                   isEnabled: true,
                   executionMode: "blocking",
+                  model: "gemini-2.5-flash-lite",
+                  historyMessageCount: 1,
                   prompt:
                     "Block any response that recommends investments, suggests specific stocks, ETFs, funds, bonds, crypto, or portfolio allocations, or otherwise gives personalized financial or investment advice. If the agent starts giving investment recommendations, end the conversation immediately.",
                   triggerAction: { type: "end_call" },

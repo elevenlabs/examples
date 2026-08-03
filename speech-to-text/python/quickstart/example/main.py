@@ -3,6 +3,7 @@ import sys
 
 from dotenv import load_dotenv
 from elevenlabs import ElevenLabs
+from elevenlabs.core.api_error import ApiError
 
 load_dotenv()
 
@@ -25,7 +26,10 @@ def main():
     except FileNotFoundError:
         print(f"Error: Audio file not found: {audio_path}", file=sys.stderr)
         sys.exit(1)
-    except Exception as e:
+    except KeyError:
+        print("Error: Missing ELEVENLABS_API_KEY", file=sys.stderr)
+        sys.exit(1)
+    except ApiError as e:
         print(f"Error: Transcription failed: {e}", file=sys.stderr)
         sys.exit(1)
 

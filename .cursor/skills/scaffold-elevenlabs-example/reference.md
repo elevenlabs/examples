@@ -53,7 +53,7 @@ Ignore the deprecated root `examples/` folder for new work.
 | `speech-to-text/nextjs/realtime`       | `templates/nextjs`     | `app/api/scribe-token/route.ts`, `app/page.tsx`                                                         | Adds `@elevenlabs/react` and `@elevenlabs/elevenlabs-js`, copies `.env.local`, preserves `node_modules` and `.next` |
 | `agents/nextjs/quickstart`             | `templates/nextjs`     | `app/api/agent/route.ts`, `app/api/conversation-token/route.ts`, `app/page.tsx`                         | Same Next.js setup pattern, removes `@elevenlabs/client` if present                                                 |
 | `agents/nextjs/guardrails`             | `templates/nextjs`     | `app/api/agent/route.ts`, `app/api/conversation-token/route.ts`, `app/page.tsx`                         | Same as quickstart, but prompt targets guardrails and `onGuardrailTriggered`                                        |
-| `speech-engine/nextjs/quickstart`      | `templates/nextjs`     | `server.mts`, `scripts/create-engine.mts`, `app/api/token/route.ts`, `app/page.tsx`, `lib/assistant.ts` | Adds `openai`, `dotenv`, `tsx`; Speech Engine scripts; `livekit-client` override; copies `.env.example`             |
+| `speech-engine/nextjs/quickstart`      | `templates/nextjs`     | `server.mts`, `scripts/create-engine.mts`, `app/api/token/route.ts`, `app/page.tsx`, `lib/assistant.ts` | Adds `openai`, `dotenv`, `tsx`; Speech Engine scripts; copies `.env.example`                                        |
 
 ## Runtime setup rules
 

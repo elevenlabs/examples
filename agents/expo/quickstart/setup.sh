@@ -31,9 +31,6 @@ node -e "
   pkg.name = 'realtime-voice-agent-expo';
   pkg.dependencies['@elevenlabs/react'] = '^' + process.env.REACT_VER;
   pkg.dependencies['@elevenlabs/elevenlabs-js'] = '^' + process.env.ELEVENLABS_VER;
-  pkg.pnpm = pkg.pnpm || {};
-  pkg.pnpm.overrides = pkg.pnpm.overrides || {};
-  pkg.pnpm.overrides['livekit-client'] = '2.16.1';
   require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
   app.expo.name = 'Real-Time Voice Agent';
   app.expo.slug = 'realtime-voice-agent-expo';

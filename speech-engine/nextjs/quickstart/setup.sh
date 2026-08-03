@@ -42,9 +42,6 @@ node -e "
   pkg.scripts['speech-engine:create'] = 'tsx scripts/create-engine.mts';
   pkg.scripts['speech-engine:enable-first-message'] = 'tsx scripts/enable-first-message.mts';
   pkg.scripts['speech-engine:server'] = 'tsx server.mts';
-  pkg.pnpm = pkg.pnpm || {};
-  pkg.pnpm.overrides = pkg.pnpm.overrides || {};
-  pkg.pnpm.overrides['livekit-client'] = '2.16.1';
   require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
 "
 

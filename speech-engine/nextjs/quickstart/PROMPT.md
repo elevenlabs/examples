@@ -4,7 +4,6 @@ Before writing any code, invoke the `/speech-engine` skill to learn the correct 
 
 - Add `@elevenlabs/react`, `@elevenlabs/elevenlabs-js`, `openai`, `dotenv`, and `tsx`.
 - Add scripts: `speech-engine:create` (`tsx scripts/create-engine.mts`), `speech-engine:enable-first-message` (`tsx scripts/enable-first-message.mts`), `speech-engine:server` (`tsx server.mts`).
-- Pin `livekit-client` to `2.16.1` under `pnpm.overrides` for WebRTC stability.
 
 ## 2. `.env.example`
 

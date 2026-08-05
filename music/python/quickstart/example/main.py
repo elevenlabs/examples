@@ -108,6 +108,7 @@ def main() -> None:
         audio = client.music.compose(
             prompt=prompt,
             music_length_ms=10000,
+            model_id="music_v2",
         )
         with open(out_path, "wb") as f:
             f.writelines(audio)

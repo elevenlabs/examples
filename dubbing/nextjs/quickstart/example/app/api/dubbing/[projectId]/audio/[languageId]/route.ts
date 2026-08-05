@@ -38,7 +38,8 @@ export async function GET(
       languageId
     );
 
-    // outputs carries a signed, time-limited download URL once completed.
+    // outputs carries a signed download URL once the dub has completed. The
+    // URL expires after about an hour; fetching the language returns a fresh one.
     const outputUrl = language.outputs?.losslessAudio;
     if (language.status !== "completed" || !outputUrl) {
       return jsonError("Dubbed audio is not ready yet.", 503);

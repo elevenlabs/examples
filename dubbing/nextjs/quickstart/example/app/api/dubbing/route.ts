@@ -43,12 +43,11 @@ export async function POST(request: Request) {
 
   try {
     // The targetLanguage shortcut also queues a language target, which starts
-    // automatically once the project finishes transcribing.
+    // generating automatically once the project finishes transcribing.
     const project = await client.dubbing.project.create({
       file: audio,
       targetLanguage: targetLang,
       sourceLanguage: sourceLang === "auto" ? undefined : sourceLang,
-      modelId: "dubbing_v2",
       reference: "Browser dubbing demo",
     });
 

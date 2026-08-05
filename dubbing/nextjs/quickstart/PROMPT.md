@@ -1,6 +1,6 @@
 Before writing any code, invoke the `/text-to-speech` skill to learn the correct ElevenLabs SDK patterns.
 
-This example uses the Dubbing Projects API (dubbing v2): a **project** holds the source media and its transcript, and each **language target** produces one dubbed output.
+This example uses the Dubbing Projects API (dubbing v2): a **project** holds the source media and its transcript, and each **language target** produces one dubbed output in a single language.
 
 ## 1. `app/api/dubbing/route.ts`
 
@@ -9,7 +9,7 @@ Secure POST endpoint that starts a dubbing project from an uploaded recording.
 - Read `ELEVENLABS_API_KEY` from `process.env`. Return 500 if missing.
 - Accept `audio` (File), `targetLang` (string), and optional `sourceLang` (string, default `auto`) from request `FormData`.
 - Return 400 for missing or invalid audio, or a missing `targetLang`.
-- Use `ElevenLabsClient` and call `client.dubbing.project.create({ file: audio, targetLanguage: targetLang, sourceLanguage: sourceLang === "auto" ? undefined : sourceLang, modelId: "dubbing_v2", reference: "Browser dubbing demo" })`. The `targetLanguage` shortcut also queues a language target that starts automatically once the project finishes transcribing.
+- Use `ElevenLabsClient` and call `client.dubbing.project.create({ file: audio, targetLanguage: targetLang, sourceLanguage: sourceLang === "auto" ? undefined : sourceLang, reference: "Browser dubbing demo" })`. The `targetLanguage` shortcut also queues a language target that starts generating automatically once the project finishes transcribing.
 - Return JSON `{ projectId, languageId }`, reading `languageId` from `project.languageIds?.[0] ?? null`.
 - Wrap failures in readable JSON errors.
 
@@ -28,7 +28,7 @@ Secure GET endpoint that returns combined project and language status for pollin
 Secure GET endpoint that proxies the dubbed audio output.
 
 - Read and validate `projectId` and `languageId` from the route params.
-- Call `client.dubbing.project.language.get(projectId, languageId)`. Once the language is `completed`, `outputs.losslessAudio` carries a signed, time-limited download URL.
+- Call `client.dubbing.project.language.get(projectId, languageId)`. Once the language is `completed`, `outputs.losslessAudio` carries a signed download URL that expires after about an hour; fetching the language again returns a fresh one.
 - Return 503 with a readable JSON error if the language is not `completed` yet or has no output URL.
 - Fetch the signed URL server-side and stream the body back with the upstream content type (default `audio/wav`).
 

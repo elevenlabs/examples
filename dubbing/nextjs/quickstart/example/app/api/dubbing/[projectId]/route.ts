@@ -11,27 +11,37 @@ function isValidId(id: string) {
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ dubbingId: string }> }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   const apiKey = process.env.ELEVENLABS_API_KEY;
   if (!apiKey) {
     return jsonError("Server is missing ELEVENLABS_API_KEY.", 500);
   }
 
-  const { dubbingId } = await params;
-  if (!dubbingId || !isValidId(dubbingId)) {
-    return jsonError("Invalid dubbing id.", 400);
+  const { projectId } = await params;
+  if (!projectId || !isValidId(projectId)) {
+    return jsonError("Invalid project id.", 400);
   }
 
   const client = new ElevenLabsClient({ apiKey });
 
   try {
-    const meta = await client.dubbing.get(dubbingId);
+    const project = await client.dubbing.project.get(projectId);
+    const languageId = project.languageIds?.[0] ?? null;
+
+    let languageStatus: string | null = null;
+    if (languageId) {
+      const language = await client.dubbing.project.language.get(
+        projectId,
+        languageId
+      );
+      languageStatus = language.status;
+    }
+
     return NextResponse.json({
-      status: meta.status,
-      error: meta.error ?? null,
-      sourceLanguage: meta.sourceLanguage ?? null,
-      targetLanguages: meta.targetLanguages ?? [],
+      projectStatus: project.status,
+      languageId,
+      languageStatus,
     });
   } catch (e) {
     if (e instanceof ElevenLabsError) {

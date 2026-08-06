@@ -42,16 +42,18 @@ export async function POST(request: Request) {
   const client = new ElevenLabsClient({ apiKey });
 
   try {
-    const result = await client.dubbing.create({
+    // The targetLanguage shortcut also queues a language target, which starts
+    // generating automatically once the project finishes transcribing.
+    const project = await client.dubbing.project.create({
       file: audio,
-      targetLang,
-      sourceLang: sourceLang === "auto" ? undefined : sourceLang,
-      name: "Browser dubbing demo",
+      targetLanguage: targetLang,
+      sourceLanguage: sourceLang === "auto" ? undefined : sourceLang,
+      reference: "Browser dubbing demo",
     });
 
     return NextResponse.json({
-      dubbingId: result.dubbingId,
-      expectedDurationSec: result.expectedDurationSec,
+      projectId: project.projectId,
+      languageId: project.languageIds?.[0] ?? null,
     });
   } catch (e) {
     if (e instanceof ElevenLabsError) {

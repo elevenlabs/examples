@@ -17,7 +17,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "tailwind-merge": "^3.5.0",
-    "@elevenlabs/elevenlabs-js": "^2.40.0"
+    "@elevenlabs/elevenlabs-js": "^2.58.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

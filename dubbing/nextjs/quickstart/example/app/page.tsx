@@ -52,8 +52,9 @@ export default function Home() {
   const [wavFile, setWavFile] = useState<File | null>(null);
   const [originalUrl, setOriginalUrl] = useState<string | null>(null);
 
-  const [dubbingId, setDubbingId] = useState<string | null>(null);
+  const [projectId, setProjectId] = useState<string | null>(null);
   const [dubbedUrl, setDubbedUrl] = useState<string | null>(null);
+  const [pollNote, setPollNote] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -87,7 +88,7 @@ export default function Home() {
       if (prev) URL.revokeObjectURL(prev);
       return null;
     });
-    setDubbingId(null);
+    setProjectId(null);
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -179,7 +180,8 @@ export default function Home() {
       return null;
     });
     setPhase("polling");
-    setDubbingId(null);
+    setProjectId(null);
+    setPollNote(null);
 
     const body = new FormData();
     body.set("audio", wavFile);
@@ -189,8 +191,8 @@ export default function Home() {
     try {
       const res = await fetch("/api/dubbing", { method: "POST", body });
       const data = (await res.json()) as {
-        dubbingId?: string;
-        expectedDurationSec?: number;
+        projectId?: string;
+        languageId?: string | null;
         error?: string;
       };
       if (!res.ok) {
@@ -198,12 +200,12 @@ export default function Home() {
         setPhase("error");
         return;
       }
-      if (!data.dubbingId) {
-        setError("Missing dubbing id in response.");
+      if (!data.projectId) {
+        setError("Missing project id in response.");
         setPhase("error");
         return;
       }
-      setDubbingId(data.dubbingId);
+      setProjectId(data.projectId);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload failed.");
       setPhase("error");
@@ -211,7 +213,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (phase !== "polling" || !dubbingId) return;
+    if (phase !== "polling" || !projectId) return;
 
     let cancelled = false;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -219,42 +221,38 @@ export default function Home() {
     const poll = async () => {
       try {
         const res = await fetch(
-          `/api/dubbing/${encodeURIComponent(dubbingId)}`
+          `/api/dubbing/${encodeURIComponent(projectId)}`
         );
         const data = (await res.json()) as {
-          status?: string;
-          error?: string | null;
-          sourceLanguage?: string | null;
-          targetLanguages?: string[];
+          projectStatus?: string;
+          languageId?: string | null;
+          languageStatus?: string | null;
+          error?: string;
         };
 
         if (cancelled) return;
 
         if (!res.ok) {
-          setError(
-            (data as { error?: string }).error ?? "Status request failed."
-          );
+          setError(data.error ?? "Status request failed.");
           setPhase("error");
           return;
         }
 
-        if (data.error) {
-          setError(data.error);
+        if (data.projectStatus === "failed") {
+          setError("Preparing the source audio failed.");
+          setPhase("error");
+          return;
+        }
+        if (data.languageStatus === "failed") {
+          setError("Dubbing failed.");
           setPhase("error");
           return;
         }
 
-        const st = data.status?.toLowerCase();
-        if (st === "failed") {
-          setError(data.error ?? "Dubbing failed.");
-          setPhase("error");
-          return;
-        }
-
-        if (st === "dubbed") {
+        if (data.languageStatus === "completed" && data.languageId) {
           try {
             const audioRes = await fetch(
-              `/api/dubbing/${encodeURIComponent(dubbingId)}/audio/${encodeURIComponent(targetLang)}`
+              `/api/dubbing/${encodeURIComponent(projectId)}/audio/${encodeURIComponent(data.languageId)}`
             );
             if (!audioRes.ok) {
               const errJson = (await audioRes.json().catch(() => ({}))) as {
@@ -282,6 +280,11 @@ export default function Home() {
           return;
         }
 
+        setPollNote(
+          data.projectStatus !== "ready"
+            ? "Transcribing your recording…"
+            : "Generating the dubbed audio…"
+        );
         timeoutId = setTimeout(poll, 5000);
       } catch (e) {
         if (!cancelled) {
@@ -297,7 +300,7 @@ export default function Home() {
       cancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [phase, dubbingId, targetLang]);
+  }, [phase, projectId]);
 
   const sameLangBlocked = sourceLang !== "auto" && sourceLang === targetLang;
 
@@ -317,7 +320,7 @@ export default function Home() {
       case "preparing":
         return "Preparing audio…";
       case "polling":
-        return "Dubbing in progress… checking every 5s.";
+        return pollNote ?? "Dubbing in progress… checking every 5s.";
       case "ready":
         return "Dubbing complete.";
       case "error":
@@ -457,9 +460,9 @@ export default function Home() {
               <a
                 className="mt-2 inline-block text-sm text-neutral-900 underline"
                 href={dubbedUrl}
-                download={`dub-${targetLang}.mp3`}
+                download={`dub-${targetLang}.wav`}
               >
-                Download MP3
+                Download WAV
               </a>
             </div>
           ) : null}

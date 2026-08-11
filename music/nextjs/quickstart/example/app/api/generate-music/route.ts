@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
     const stream = await client.music.compose({
       prompt: prompt.trim(),
       musicLengthMs: 10000,
+      modelId: "music_v2",
     });
 
     return new Response(stream, {

@@ -32,5 +32,13 @@
     "@types/react": "latest",
     "babel-plugin-module-resolver": "latest",
     "typescript": "latest"
+  },
+  "overrides": {
+    "livekit-client": "2.16.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "livekit-client": "2.16.1"
+    }
   }
 }

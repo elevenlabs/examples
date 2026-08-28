@@ -1,8 +1,28 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { useScribe, CommitStrategy } from "@elevenlabs/react";
+import { useCallback, useEffect, useState } from "react";
+import { CommitStrategy, useScribe } from "@elevenlabs/react";
 import { LiveWaveform } from "@/components/ui/live-waveform";
+
+function statusLabel(
+  status: string,
+  isConnecting: boolean,
+  isActive: boolean
+): string {
+  if (isConnecting) {
+    return "Connecting";
+  }
+  if (status === "transcribing") {
+    return "Transcribing";
+  }
+  if (isActive) {
+    return "Connected";
+  }
+  if (status === "error") {
+    return "Error";
+  }
+  return "Disconnected";
+}
 
 export default function Home() {
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +55,6 @@ export default function Home() {
     }
   }, [scribe.status]);
 
-  // Check both connected and transcribing states to properly show active status
   const isActive =
     scribe.status === "connected" || scribe.status === "transcribing";
   const isConnecting = scribe.status === "connecting";
@@ -45,16 +64,18 @@ export default function Home() {
       setError(null);
       setPartialTranscript("");
 
-      // Fetch a fresh single-use token from our API
       const response = await fetch("/api/scribe-token");
-      if (!response.ok) {
-        throw new Error("Failed to get transcription token");
-      }
-      const { token } = await response.json();
+      const data = (await response.json().catch(() => ({}))) as {
+        token?: string;
+        error?: string;
+      };
 
-      // Connect with microphone access
+      if (!response.ok || !data.token) {
+        throw new Error(data.error || "Failed to get transcription token");
+      }
+
       await scribe.connect({
-        token,
+        token: data.token,
         microphone: {
           echoCancellation: true,
           noiseSuppression: true,
@@ -64,7 +85,9 @@ export default function Home() {
     } catch (err) {
       console.error("Failed to start transcription:", err);
       setError(
-        "Failed to start transcription. Please check your permissions and try again."
+        err instanceof Error
+          ? err.message
+          : "Failed to start transcription. Please check your permissions and try again."
       );
     }
   }, [scribe]);
@@ -78,12 +101,8 @@ export default function Home() {
     if (isActive) {
       handleStop();
     } else {
-      handleStart();
+      void handleStart();
     }
-  };
-
-  const handleClearHistory = () => {
-    setCommittedHistory([]);
   };
 
   return (
@@ -98,105 +117,61 @@ export default function Home() {
           </p>
         </header>
 
-        <div className="mt-8 space-y-6">
-          {/* Controls */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleToggle}
-                disabled={isConnecting}
-                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-red-500 text-white hover:bg-red-600"
-                    : isConnecting
-                      ? "bg-neutral-200 text-neutral-400 cursor-not-allowed"
-                      : "bg-neutral-900 text-white hover:bg-neutral-800"
-                }`}
-              >
-                {isConnecting ? "Connecting..." : isActive ? "Stop" : "Start"}
-              </button>
-              {committedHistory.length > 0 && (
-                <button
-                  onClick={handleClearHistory}
-                  className="rounded-md px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
-                >
-                  Clear History
-                </button>
-              )}
-            </div>
-            <div className="text-xs text-neutral-400">
-              {isActive ? (
-                <span className="flex items-center">
-                  <span className="mr-1.5 h-2 w-2 rounded-full bg-green-500"></span>
-                  {scribe.status === "transcribing"
-                    ? "Transcribing"
-                    : "Connected"}
-                </span>
-              ) : (
-                <span>Disconnected</span>
-              )}
-            </div>
+        <div className="mt-10 space-y-6">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleToggle}
+              disabled={isConnecting}
+              className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isConnecting ? "Connecting..." : isActive ? "Stop" : "Start"}
+            </button>
+            <span className="text-xs text-neutral-400">
+              {statusLabel(scribe.status, isConnecting, isActive)}
+            </span>
           </div>
 
-          {/* Error message */}
-          {error && (
-            <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          {error ? (
+            <p className="text-sm text-red-600" role="alert">
               {error}
-            </div>
-          )}
+            </p>
+          ) : null}
 
-          {/* Live waveform */}
-          <div className="h-16">
-            <LiveWaveform
-              active={isActive}
-              processing={isActive}
-              barColor="rgb(115 115 115)"
-              fadeEdges={true}
-              fadeWidth={24}
-              height={64}
-            />
-          </div>
+          <LiveWaveform
+            active={isActive}
+            barColor="rgb(115 115 115)"
+            fadeEdges
+            fadeWidth={24}
+            height={64}
+          />
 
-          {/* Partial transcript */}
           {(isActive || partialTranscript) && (
-            <div className="space-y-2">
-              <h2 className="text-xs text-neutral-400 uppercase tracking-wide">
-                Live Transcript
-              </h2>
-              <div className="min-h-[3rem] rounded-md border border-neutral-200 px-4 py-3">
-                <p className="text-sm text-neutral-600">
-                  {partialTranscript || (
-                    <span className="text-neutral-400">Listening...</span>
-                  )}
-                </p>
-              </div>
+            <div className="space-y-1.5">
+              <p className="text-xs text-neutral-400">Live transcript</p>
+              <p className="min-h-[1.5rem] text-sm italic text-neutral-500">
+                {partialTranscript || "Listening..."}
+              </p>
             </div>
           )}
 
-          {/* Committed transcript history */}
           {committedHistory.length > 0 && (
-            <div className="space-y-2">
-              <h2 className="text-xs text-neutral-400 uppercase tracking-wide">
-                History
-              </h2>
-              <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="space-y-1.5">
+              <p className="text-xs text-neutral-400">History</p>
+              <div className="max-h-96 space-y-3 overflow-y-auto">
                 {committedHistory.map((text, index) => (
-                  <div
-                    key={index}
-                    className="rounded-md border border-neutral-200 px-4 py-3 text-sm"
-                  >
+                  <p key={`${index}-${text.slice(0, 24)}`} className="text-sm">
                     {text}
-                  </div>
+                  </p>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Instructions when not started */}
           {!isActive && !isConnecting && committedHistory.length === 0 && (
-            <div className="text-center py-12 text-sm text-neutral-500">
-              Click "Start" to begin transcribing audio from your microphone.
-            </div>
+            <p className="text-sm text-neutral-500">
+              Click Start to begin transcribing audio from your microphone.
+            </p>
           )}
         </div>
       </div>

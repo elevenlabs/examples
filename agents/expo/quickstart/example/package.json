@@ -13,24 +13,32 @@
     "serve:web": "expo serve"
   },
   "dependencies": {
+    "@elevenlabs/elevenlabs-js": "^2.60.0",
+    "@elevenlabs/react": "^1.12.0",
     "@expo/metro-runtime": "latest",
     "expo": "latest",
     "expo-constants": "latest",
     "expo-linking": "latest",
     "expo-router": "latest",
     "expo-status-bar": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "react-native": "latest",
-    "react-native-safe-area-context": "latest",
-    "react-native-screens": "latest",
-    "react-native-web": "latest",
-    "@elevenlabs/react": "^1.12.0",
-    "@elevenlabs/elevenlabs-js": "^2.60.0"
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-web": "latest"
   },
   "devDependencies": {
     "@types/react": "latest",
     "babel-plugin-module-resolver": "latest",
-    "typescript": "latest"
+    "typescript": "~6.0.3"
+  },
+  "overrides": {
+    "livekit-client": "2.16.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "livekit-client": "2.16.1"
+    }
   }
 }

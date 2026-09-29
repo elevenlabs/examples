@@ -63,13 +63,6 @@ export default function Home() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recordStartRef = useRef<number>(0);
 
-  useEffect(() => {
-    return () => {
-      if (originalUrl) URL.revokeObjectURL(originalUrl);
-      if (dubbedUrl) URL.revokeObjectURL(dubbedUrl);
-    };
-  }, [originalUrl, dubbedUrl]);
-
   const stopTimer = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -181,7 +174,7 @@ export default function Home() {
     });
     setPhase("polling");
     setProjectId(null);
-    setPollNote(null);
+    setPollNote("Transcribing your recording…");
 
     const body = new FormData();
     body.set("audio", wavFile);
@@ -320,7 +313,7 @@ export default function Home() {
       case "preparing":
         return "Preparing audio…";
       case "polling":
-        return pollNote ?? "Dubbing in progress… checking every 5s.";
+        return pollNote ?? "Transcribing your recording…";
       case "ready":
         return "Dubbing complete.";
       case "error":
@@ -381,7 +374,11 @@ export default function Home() {
                 )}
                 onClick={startRecording}
               >
-                {phase === "preparing" ? "Preparing…" : "Record"}
+                {phase === "preparing"
+                  ? "Preparing…"
+                  : wavFile
+                    ? "Record Again"
+                    : "Record"}
               </button>
             )}
           </div>
@@ -448,7 +445,7 @@ export default function Home() {
                 )}
                 onClick={startDubbing}
               >
-                {phase === "polling" ? "Dubbing…" : "Dub recording"}
+                {phase === "polling" ? "Dubbing…" : "Dub Recording"}
               </button>
             </div>
           ) : null}

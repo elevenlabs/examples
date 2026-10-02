@@ -210,14 +210,17 @@ function ConversationView() {
   const voiceContext = useMemo(() => buildVoiceContext(messages), [messages]);
   const isVoiceConnected = conversation.status === "connected";
   const isVoiceStarting = conversation.status === "connecting";
-  const canStartVoice = conversation.status === "disconnected";
+  const canStartVoice =
+    conversation.status === "disconnected" || conversation.status === "error";
   const connectionStatus = isVoiceConnected
     ? conversation.mode === "speaking"
       ? "Voice connected - speaking"
       : "Voice connected - listening"
     : isVoiceStarting
       ? "Voice connecting"
-      : "Chat only";
+      : conversation.status === "error"
+        ? "Voice disconnected"
+        : "Chat only";
 
   useEffect(() => {
     const thread = threadRef.current;

@@ -439,10 +439,14 @@ for prompt_file in "${PROMPT_FILES[@]}"; do
       if [[ -n "${CURSOR_MODEL}" ]]; then
         cursor_cmd+=(--model "${CURSOR_MODEL}")
       fi
-      cursor_cmd+=("${prompt_text}")
+      # Linux MAX_ARG_STRLEN is 128KiB. Concatenated skill files (especially
+      # agents) now exceed that as a single argv, so feed the prompt on stdin.
+      prompt_tmp="$(mktemp)"
+      trap 'rm -f "${prompt_tmp}"' EXIT
+      printf '%s' "${prompt_text}" > "${prompt_tmp}"
       run_with_timeout \
         "${CURSOR_TIMEOUT_SECONDS}" \
-        "${cursor_cmd[@]}"
+        bash -c 'exec "$@" < "$0"' "${prompt_tmp}" "${cursor_cmd[@]}"
     ) 2>&1
   )"
   RUN_EXIT=$?

@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 
-export const dynamic = "force-dynamic";
-
 export async function GET() {
   const apiKey = process.env.ELEVENLABS_API_KEY;
 
@@ -18,12 +16,10 @@ export async function GET() {
       apiKey: apiKey,
     });
 
-    // Single-use tokens expire after 15 minutes and must not be cached.
+    // Generate a single-use token for realtime transcription
+    // create() already returns { token: "..." } so we pass it through directly
     const result = await elevenlabs.tokens.singleUse.create("realtime_scribe");
-    return NextResponse.json(
-      { token: result.token },
-      { headers: { "Cache-Control": "no-store" } }
-    );
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Token generation error:", error);
     return NextResponse.json(

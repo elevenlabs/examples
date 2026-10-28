@@ -2,7 +2,7 @@ import os
 import sys
 
 from dotenv import load_dotenv
-from elevenlabs import ElevenLabs
+from elevenlabs import ElevenLabs, SpeechToTextChunkResponseModel
 from elevenlabs.core.api_error import ApiError
 
 load_dotenv()
@@ -20,7 +20,10 @@ def main():
                 model_id="scribe_v2"
             )
 
-        # Print transcript to stdout
+        if not isinstance(result, SpeechToTextChunkResponseModel):
+            print("Error: Transcription response did not include text", file=sys.stderr)
+            sys.exit(1)
+
         print(result.text)
 
     except FileNotFoundError:

@@ -28,6 +28,7 @@ Shared base templates live in `templates/` (Expo, Next.js, Python, TypeScript). 
 - [Real-Time Voice Agent (Next.js)](agents/nextjs/quickstart/example/README.md) — Live voice conversations with the ElevenLabs Agents Platform using the React Agents SDK.
 - [Voice Agent Guardrails Demo (Next.js)](agents/nextjs/guardrails/example/README.md) — Demonstrate custom guardrails and the `guardrail_triggered` client event in a live voice agent.
 - [OpenAI Realtime SDK with ElevenLabs (Next.js)](agents/nextjs/openai-realtime/example/README.md) — Talk to ElevenLabs Realtime using OpenAI's Realtime SDK pointed at the ElevenLabs OpenAI-compatible endpoint.
+- [LiveKit Agents with Eleven Realtime (Python)](agents/python/livekit/example/README.md) — Talk to a LiveKit Agents console voice agent powered by ElevenLabs Realtime, with a function tool.
 - [Voice Isolator (Next.js)](voice-isolator/nextjs/quickstart/example/README.md) — Record your voice in the browser and remove background noise with the Voice Isolator API.
 - [Dubbing Recorder (Next.js)](dubbing/nextjs/quickstart/example/README.md) — Record your voice in the browser, dub it into another language, and play or download the result.
 

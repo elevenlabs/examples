@@ -23,7 +23,10 @@ livekit-agents>=1.8.10
 livekit-plugins-elevenlabs @ git+https://github.com/kraenhansen/livekit-agents@kraen/elevenlabs-realtime#subdirectory=livekit-plugins/livekit-plugins-elevenlabs
 python-dotenv>=1.2.1
 EOF
-echo "ELEVEN_API_KEY=" > example/.env.example
+cat > example/.env.example <<'EOF'
+# livekit-plugins-elevenlabs reads ELEVEN_API_KEY, not the usual ELEVENLABS_API_KEY.
+ELEVEN_API_KEY=
+EOF
 
 if [ -f "$DIR/.env" ]; then
   cp "$DIR/.env" example/.env

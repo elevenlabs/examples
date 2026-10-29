@@ -12,7 +12,7 @@ Talk to a [LiveKit Agents](https://docs.livekit.io/agents/) voice agent powered 
    cp .env.example .env
    ```
 
-   Then edit `.env` and set `ELEVEN_API_KEY` to your [ElevenLabs API key](https://elevenlabs.io/app/settings/api-keys).
+   Then edit `.env` and set `ELEVEN_API_KEY` to your [ElevenLabs API key](https://elevenlabs.io/app/settings/api-keys). Note the name: `livekit-plugins-elevenlabs` reads `ELEVEN_API_KEY`, not the `ELEVENLABS_API_KEY` the other examples use.
 
 2. Create a virtual environment and install dependencies:
 

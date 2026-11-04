@@ -18,7 +18,7 @@ type TranscriptLine = {
   text: string;
 };
 
-function VoiceAgentPanel() {
+function VoiceAgentPanel({ onDismissError }: { onDismissError: () => void }) {
   const [agentId, setAgentId] = useState("");
   const [agentName, setAgentName] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<TranscriptLine[]>([]);
@@ -108,6 +108,7 @@ function VoiceAgentPanel() {
     }
     setBusy("token");
     setApiError(null);
+    onDismissError();
     setTranscript([]);
     try {
       if (
@@ -138,17 +139,18 @@ function VoiceAgentPanel() {
     } finally {
       setBusy("idle");
     }
-  }, [agentId, startSession]);
+  }, [agentId, onDismissError, startSession]);
 
   const stopVoice = useCallback(() => {
     setApiError(null);
+    onDismissError();
     void endSession();
-  }, [endSession]);
+  }, [endSession, onDismissError]);
 
   const isBusy = busy !== "idle";
-  const isConnected = status === "connected";
-  const canStart = !isBusy && !isConnected && !!agentId.trim();
-  const primaryDisabled = isConnected ? false : !canStart || isBusy;
+  const sessionLive = status === "connected" || status === "connecting";
+  const canStart = !isBusy && !sessionLive && !!agentId.trim();
+  const primaryDisabled = sessionLive ? false : !canStart;
 
   return (
     <View>
@@ -203,7 +205,7 @@ function VoiceAgentPanel() {
       <Pressable
         accessibilityRole="button"
         disabled={primaryDisabled}
-        onPress={isConnected ? stopVoice : startVoice}
+        onPress={sessionLive ? stopVoice : startVoice}
         style={({ pressed }) => [
           styles.buttonPrimary,
           (pressed || (isBusy && busy === "token")) && styles.buttonPressed,
@@ -214,7 +216,7 @@ function VoiceAgentPanel() {
           <ActivityIndicator color="#ffffff" />
         ) : (
           <Text style={styles.buttonText}>
-            {isConnected ? "Stop" : "Start"}
+            {sessionLive ? "Stop" : "Start"}
           </Text>
         )}
       </Pressable>
@@ -271,6 +273,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.screen}>
       <ConversationProvider
+        onConnect={() => setProviderError(null)}
         onError={msg => {
           console.error("Conversation error:", msg);
           setProviderError(msg);
@@ -286,7 +289,7 @@ export default function HomeScreen() {
           {providerError ? (
             <Text style={styles.error}>{providerError}</Text>
           ) : null}
-          <VoiceAgentPanel />
+          <VoiceAgentPanel onDismissError={() => setProviderError(null)} />
         </View>
       </ConversationProvider>
     </SafeAreaView>
@@ -413,10 +416,6 @@ const styles = StyleSheet.create({
   transcriptBox: {
     marginTop: 8,
     maxHeight: 320,
-    borderWidth: 1,
-    borderColor: "#e5e5e5",
-    borderRadius: 6,
-    padding: 12,
   },
   transcriptEmpty: {
     fontSize: 14,

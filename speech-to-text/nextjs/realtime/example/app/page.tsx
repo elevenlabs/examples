@@ -22,7 +22,7 @@ export default function Home() {
   const nextEntryIdRef = useRef(0);
 
   const scribe = useScribe({
-    modelId: "scribe_v2_realtime",
+    modelId: "scribe_v3_live",
     commitStrategy: CommitStrategy.VAD,
     vadSilenceThresholdSecs: 1.5,
     vadThreshold: 0.4,

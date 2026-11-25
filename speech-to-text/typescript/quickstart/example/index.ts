@@ -13,6 +13,10 @@ try {
     modelId: "scribe_v2",
   });
 
+  if (!("text" in result)) {
+    throw new Error("Unexpected response: no transcript text returned.");
+  }
+
   console.log(result.text);
 } catch (error) {
   console.error(

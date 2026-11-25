@@ -50,6 +50,12 @@ export default function Home() {
         }
         if (!cancelled && Array.isArray(data.voices)) {
           setVoices(data.voices);
+          const list = data.voices;
+          setVoiceId(prev =>
+            list.length === 0 || list.some(v => v.voiceId === prev)
+              ? prev
+              : list[0].voiceId
+          );
         }
       } catch (e) {
         if (!cancelled) {
@@ -220,7 +226,7 @@ export default function Home() {
   }, []);
 
   const hasRecording = recordingBlob !== null;
-  const canConvert = hasRecording && !isConverting;
+  const canConvert = hasRecording && voiceId !== "" && !isConverting;
   const voiceSelectDisabled = !hasRecording;
 
   return (

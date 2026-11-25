@@ -37,6 +37,7 @@ export async function POST(request: Request) {
   try {
     const stream = await client.textToSoundEffects.convert({
       text: prompt.trim(),
+      modelId: "eleven_text_to_sound_v3",
     });
     return new Response(stream, {
       headers: {

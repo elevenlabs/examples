@@ -18,7 +18,10 @@ def main() -> int:
 
     try:
         client = ElevenLabs(api_key=os.environ["ELEVENLABS_API_KEY"])
-        audio = client.text_to_sound_effects.convert(text=prompt)
+        audio = client.text_to_sound_effects.convert(
+            text=prompt,
+            model_id="eleven_text_to_sound_v3",
+        )
 
         with output_path.open("wb") as output_file:
             output_file.writelines(audio)

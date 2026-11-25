@@ -24,7 +24,10 @@ async function main(): Promise<void> {
   const text = process.argv.slice(2).join(" ").trim() || DEFAULT_PROMPT;
 
   const client = new ElevenLabsClient();
-  const audio = await client.textToSoundEffects.convert({ text });
+  const audio = await client.textToSoundEffects.convert({
+    text,
+    modelId: "eleven_text_to_sound_v3",
+  });
 
   // The SDK returns the DOM ReadableStream type, which Node's typings reject.
   const source = Readable.fromWeb(

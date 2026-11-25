@@ -75,7 +75,7 @@ export async function POST() {
           prompt: {
             prompt:
               "You are a friendly voice assistant for a product demo. Speak naturally, keep replies concise, and behave like a regular spoken voice agent rather than a text-only assistant.",
-            llm: "gemini-2.0-flash",
+            llm: "gemini-3.5-flash",
             temperature: 0,
           },
         },

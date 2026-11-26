@@ -23,7 +23,7 @@ function voiceFirstConversationConfig(): ConversationalConfig {
       prompt: {
         prompt:
           "You are a helpful voice assistant. Keep replies concise and natural for spoken conversation.",
-        llm: "gemini-2.0-flash",
+        llm: "gemini-3.5-flash",
         temperature: 0.7,
       },
     },
